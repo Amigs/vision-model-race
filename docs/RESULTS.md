@@ -1,37 +1,46 @@
-# Resultados de la muestra de visión
+# Recorded runs
 
-Pista **17**, **6 m/s**, cámara **640×360**, meta **120 m**, tres carriles y dos acciones relativas: LEFT / RIGHT. Sin retraso artificial. Curso versión 3, instrucciones versión 5. Fecha de los registros: 4 de octubre de 2026 (UTC).
+All three runs use track **17**, speed **6 m/s**, a **640×360** front camera and a **120 m** finish line. Course version: 3. Prompt version: 5. Added delay: 0 ms. Recorded on October 4, 2026 (UTC).
 
-| Modelo                        | Distancia (m) | Mediana (ms) | Decisiones aplicadas | Respuestas tras finalizar | Errores |
-| ----------------------------- | ------------: | -----------: | -------------------: | ------------------------: | ------: |
-| Qwen3-VL-30B-A3B-Instruct-FP8 |         31.10 |          533 |                    8 |                         0 |       0 |
-| gpt-4.1-mini-2025-04-14       |         45.07 |         2127 |                    3 |                         1 |       0 |
-| simonlehmann/clef-NVFP4       |        120.00 |        422.5 |                   36 |                         1 |       0 |
+Each model was warmed up before its run. The recordings below are the first completed runs after warm-up with these settings.
 
-CLEF alcanzó la meta; Qwen y GPT chocaron. No se eliminaron fallos para elegir una carrera ganadora: se usa el primer ensayo completo de cada modelo después del calentamiento con este protocolo. Hubo ensayos de desarrollo anteriores con otras condiciones. No se promedian aquí todas las pruebas de desarrollo.
+| Model                         | Distance | Median latency | Applied decisions | Responses after finish/impact | Errors |
+| ----------------------------- | -------: | -------------: | ----------------: | ----------------------------: | -----: |
+| Qwen3-VL-30B-A3B-Instruct-FP8 |  31.10 m |         533 ms |                 8 |                             0 |      0 |
+| gpt-4.1-mini-2025-04-14       |  45.07 m |       2,127 ms |                 3 |                             1 |      0 |
+| simonlehmann/clef-NVFP4       | 120.00 m |       422.5 ms |                36 |                             1 |      0 |
 
-## Qué ocurrió en los impactos
+## What happened
 
-Qwen mantuvo órdenes RIGHT hasta el impacto en el carril derecho, a 31,1 m. No había una respuesta pendiente en ese instante. GPT mantuvo órdenes LEFT y chocó en el carril izquierdo a 45,1 m; tenía una petición pendiente que respondió LEFT después del choque. Estos hechos no permiten atribuir ambos fallos solo a latencia: también importa la elección de carril. CLEF cambió entre LEFT y RIGHT y alcanzó la meta.
+- **Qwen** kept issuing RIGHT before hitting the obstacle in the right lane at 31.1 m. There was no request pending at impact.
+- **GPT** kept issuing LEFT and hit the obstacle in the left lane at 45.1 m. A pending request returned LEFT after the collision.
+- **CLEF** changed between LEFT and RIGHT and reached the finish line.
 
-## Qué mide realmente
+## Setup
 
-La mediana considera las respuestas aplicadas durante la carrera, desde la captura hasta procesar la respuesta en el navegador. Incluye captura, servidor local, conexión y modelo. Una respuesta después de un impacto o de alcanzar la meta queda registrada, pero no mueve el robot ni entra en esa mediana. No es una medición aislada de GPU.
+The runs were executed separately. Qwen and CLEF shared a DGX Spark; GPT used the OpenAI API.
 
-Las carreras se ejecutaron por separado, Qwen y CLEF en el mismo DGX Spark, GPT a través de la API de OpenAI. Qwen usó el servidor original NVIDIA vLLM `nvcr.io/nvidia/vllm:26.03-py3`; CLEF usó `vllm/vllm-openai:v0.23.0` con su cabeza de decisiones. Cada modelo recibió una consulta de preparación antes de empezar. La preparación no entra en las cifras de la carrera.
+| Model                         | Serving setup                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| Qwen3-VL-30B-A3B-Instruct-FP8 | MoE, NVIDIA vLLM image `nvcr.io/nvidia/vllm:26.03-py3`                          |
+| GPT-4.1 mini                  | Snapshot `gpt-4.1-mini-2025-04-14`                                              |
+| CLEF NVFP4                    | `vllm/vllm-openai:v0.23.0`, revision `817ac58ad358f42489980ead62f8bf7cafc628c2` |
 
-Qwen: `Qwen3-VL-30B-A3B-Instruct-FP8`, MoE. GPT: snapshot `gpt-4.1-mini-2025-04-14`. CLEF: `simonlehmann/clef-NVFP4`, revisión `817ac58ad358f42489980ead62f8bf7cafc628c2`. Esta muestra no compara BF16 con NVFP4.
+## Timing
 
-## Datos auditables y vídeo
+Latency starts when the browser captures the input and ends when it processes the response. It includes capture, the app server, network transport and inference. The reported median uses decisions applied during the run. Warm-up requests and responses received after the run ends are excluded from that median.
 
-[`runs.json`](../public/comparison/runs.json) contiene las imágenes JPEG enviadas, respuestas, probabilidades cuando existen, consumo reportado, posiciones, eventos y tiempos. [`manifest.json`](../public/comparison/manifest.json) identifica el protocolo y el SHA-256 del registro. Las instrucciones y conectores están en `server.mjs`; la física, en `public/physics.mjs`.
+There is at most one pending request, with a 100 ms gap before the next one. The robot moves during requests. Its physics uses steps of up to 1/120 s, and a lane change takes 0.30 seconds.
 
-El vídeo es una **reproducción sincronizada de trayectorias registradas**, renderizada a 3840×2160 y 30 fps. Interpola entre muestras de posición; no vuelve a consultar modelos ni inventa nuevas decisiones. La captura de posiciones tuvo una frecuencia variable según la carga del navegador. El vídeo conserva los tiempos originales y muestra 2 segundos de preparación y 5 segundos de resultado final.
+## Data and replay
 
-La edición vertical para LinkedIn presenta los mismos ensayos en secuencia: Qwen, GPT y CLEF. Se exporta a 1080×1920 y 30 fps, con 1,5 segundos de presentación y 2,5 segundos de resultado por modelo. No acelera ni recorta las carreras.
+[`runs.json`](../public/comparison/runs.json) contains the input images, responses, probabilities where available, reported usage, positions and event timestamps. [`manifest.json`](../public/comparison/manifest.json) records the settings and the data file's SHA-256 hash.
 
-## Límites
+Prompts and request formats are in `server.mjs`; track generation and collisions are in `public/physics.mjs`.
 
-Un ensayo por modelo, una pista y un prompt no permiten inferir superioridad general. La ejecución depende de la red, carga del navegador, hardware, representación de la cámara y política de acciones. El menor tiempo de respuesta tampoco garantiza recorrer más distancia. No se igualan presupuestos de cómputo ni entrenamiento de los modelos.
+The videos render the recorded trajectories with interpolation between position samples. Each camera inset shows the image from the most recent request.
 
-Jev queda fuera porque su integración aquí es de texto/LiDAR. No se ha validado en vivo sin una clave de TypeSafe. La demostración no prueba capacidad de conducción ni seguridad en robótica física.
+- **Side by side:** 3840×2160 at 30 fps, with a 2-second lead-in and a 5-second final hold.
+- **Vertical:** 1080×1920 at 30 fps, ordered Qwen → GPT → CLEF, with a 1.5-second lead-in and a 2.5-second final hold per model.
+
+Race timing is preserved in both edits. Replay and export do not send new inference requests.
