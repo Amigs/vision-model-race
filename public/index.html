@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Comparación de modelos · Visión</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/vendor/build/three.module.js",
+          "three/addons/": "/vendor/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="world"></div>
+    <div class="vignette"></div>
+    <header>
+      <div class="setup">
+        <div class="model-control">
+          <button id="model-button">
+            <i id="connected"></i><span id="model-name">CLEF</span
+            ><span class="chevron">⌄</span>
+          </button>
+          <div id="models" class="menu hidden">
+            <button data-model="clef">CLEF <small>DGX</small></button
+            ><button data-model="qwen">
+              Qwen3-VL-30B MoE <small>NVIDIA</small></button
+            ><button data-model="openai">
+              GPT-4.1 mini <small>OpenAI</small></button
+            ><button data-model="jev">Jev <small>API</small></button
+            ><button data-model="llm">Otro LLM <small>API</small></button
+            ><button data-model="reference">Reglas <small>sin IA</small></button
+            ><button data-model="manual">Tú <small>teclado</small></button>
+          </div>
+        </div>
+        <div class="mode-switch">
+          <button id="laser-mode" class="active">Láser</button
+          ><button id="camera-mode">Cámara</button>
+        </div>
+        <button id="settings-button" class="plain" aria-label="Ajustes">
+          ⚙
+        </button>
+      </div>
+    </header>
+    <div class="progress">
+      <div id="progress-fill"></div>
+      <span id="distance">0 / 120 m</span
+      ><span class="finish-label">META ⌁</span>
+    </div>
+    <section id="intro">
+      <p class="kicker" id="model-origin">DGX SPARK</p>
+      <h1 id="selected-model">Qwen3-VL-30B<br />MoE</h1>
+      <p class="intro-description" id="model-detail">Cámara · 640 × 360</p>
+      <button id="start" class="start-button">
+        Iniciar carrera <span>↗</span></button
+      ><button id="activate" class="plain hidden">
+        Cargar este modelo en DGX</button
+      ><button id="warmup" class="plain">Preparar modelo</button>
+      <div class="track-settings">
+        <button id="track-button">Pista <b id="seed-label">17</b> ↻</button
+        ><label
+          >Velocidad
+          <select id="speed">
+            <option value="4">4 m/s</option>
+            <option value="6" selected>6 m/s</option>
+            <option value="9">9 m/s</option>
+          </select></label
+        >
+      </div>
+      <p id="ready-note">Conectando con los modelos…</p>
+    </section>
+    <div id="run-controls" class="hidden">
+      <button id="stop" class="plain">■ Terminar</button
+      ><button id="view" class="plain">Cambiar vista ↗</button>
+    </div>
+    <div class="sensor-strip" id="sensor-strip">
+      <div>
+        <span>IZQUIERDA</span
+        ><strong id="range-left">17.1<small>m</small></strong>
+      </div>
+      <div class="front-sensor">
+        <span>CENTRO</span
+        ><strong id="range-front">17.1<small>m</small></strong>
+      </div>
+      <div>
+        <span>DERECHA</span
+        ><strong id="range-right">26.0<small>m</small></strong>
+      </div>
+    </div>
+    <div id="camera-preview" class="hidden">
+      <span>IMAGEN ENVIADA AL MODELO</span
+      ><img
+        id="last-image"
+        alt="Última imagen de la cámara enviada al modelo"
+      />
+    </div>
+    <div class="telemetry">
+      <div class="latency">
+        <span id="latency-label">ÚLTIMA RESPUESTA</span
+        ><strong id="latency">— <small>ms</small></strong>
+        <p id="waiting">Listo para arrancar</p>
+      </div>
+      <div class="action-display">
+        <span>DECISIÓN</span><strong id="last-action">—</strong>
+        <p id="age">Sin respuestas todavía</p>
+      </div>
+    </div>
+    <div id="action-buttons">
+      <button data-action="LEFT"><span>←</span>Izquierda</button
+      ><button data-action="RIGHT"><span>→</span>Derecha</button>
+    </div>
+    <div id="trace-line"></div>
+    <div id="notice" role="status"></div>
+    <section id="result" class="hidden">
+      <span class="result-tag" id="result-tag">IMPACTO</span>
+      <h2 id="result-title">La pared llegó primero.</h2>
+      <p id="result-reason"></p>
+      <div class="result-metrics">
+        <div><b id="result-distance"></b><span>recorridos</span></div>
+        <div><b id="result-latency"></b><span>latencia mediana</span></div>
+        <div><b id="result-calls"></b><span>decisiones aplicadas</span></div>
+      </div>
+      <div class="result-buttons">
+        <button id="retry" class="start-button">Misma pista ↻</button
+        ><button id="change-model" class="plain">Cambiar modelo</button
+        ><button id="export" class="plain">↓ Datos</button>
+      </div>
+      <details>
+        <summary>Qué ocurrió exactamente</summary>
+        <pre id="crash-detail"></pre>
+      </details>
+      <div id="ranking"></div>
+    </section>
+    <dialog id="settings">
+      <div class="dialog-top">
+        <h2>Conexiones</h2>
+        <button id="close-settings" class="plain">×</button>
+      </div>
+      <p>Las claves se guardan solo en este PC.</p>
+      <form id="connection-form">
+        <h3>Jev · solo texto / LiDAR</h3>
+        <p>
+          Crea tu clave en
+          <a
+            href="https://console.typesafe.ai/keys"
+            target="_blank"
+            rel="noreferrer"
+            >TypeSafe</a
+          >. Guárdala aquí y elige Jev + Láser. No participa en la comparación
+          visual.
+        </p>
+        <label
+          >Clave de Jev<input
+            name="jevKey"
+            type="password"
+            placeholder="Dejar vacío para conservar"
+            autocomplete="off" /></label
+        ><button type="button" id="check-jev" class="plain">
+          Comprobar Jev
+        </button>
+        <h3>OpenAI · visión y texto</h3>
+        <label
+          >Clave de OpenAI<input
+            name="openaiKey"
+            type="password"
+            placeholder="Dejar vacío para conservar"
+            autocomplete="off" /></label
+        ><label
+          >Modelo de OpenAI<input
+            name="openaiModel"
+            placeholder="gpt-4.1-mini-2025-04-14" /></label
+        ><button type="button" id="check-openai" class="plain">
+          Comprobar OpenAI
+        </button>
+        <details>
+          <summary>Otro LLM o servidores locales</summary>
+          <label
+            >URL de Qwen<input
+              name="qwenUrl"
+              type="url"
+              placeholder="http://127.0.0.1:8000/v1" /></label
+          ><label
+            >Nombre servido por Qwen<input
+              name="qwenModel"
+              placeholder="default" /></label
+          ><label
+            >Etiqueta de Qwen<input
+              name="qwenLabel"
+              placeholder="Qwen3-VL-30B-A3B" /></label
+          ><label
+            >Clave de Qwen<input
+              name="qwenKey"
+              type="password"
+              autocomplete="off" /></label
+          ><label
+            >URL de CLEF<input
+              name="clefUrl"
+              type="url"
+              placeholder="http://127.0.0.1:8080" /></label
+          ><label
+            >URL de otro LLM<input
+              name="llmUrl"
+              type="url"
+              placeholder="https://servidor/v1" /></label
+          ><label
+            >Nombre del modelo<input
+              name="llmModel"
+              placeholder="identificador del modelo" /></label
+          ><label
+            >Clave del LLM<input
+              name="llmKey"
+              type="password"
+              placeholder="Opcional para servidores locales"
+              autocomplete="off"
+          /></label>
+        </details>
+        <button class="start-button" type="submit">Guardar conexiones</button>
+        <p id="connection-check" role="status"></p>
+      </form>
+      <hr />
+      <label
+        >Retraso artificial añadido
+        <select id="extra-delay">
+          <option value="0">0 ms · comparación normal</option>
+          <option value="300">300 ms</option>
+          <option value="800">800 ms</option>
+          <option value="1500">1500 ms</option>
+        </select></label
+      >
+      <p class="small">
+        El modo Láser usa un escáner plano 2D: distancias de los tres carriles,
+        sin alturas. El robot avanza automáticamente; cada orden lo mueve un
+        carril a izquierda o derecha. El modo Cámara envía solo la imagen
+        frontal, sin distancias. Jev admite únicamente Láser.
+      </p>
+    </dialog>
+    <script type="module" src="/app.mjs"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  clef:
+    image: vllm/vllm-openai:v0.23.0
+    gpus: all
+    shm_size: 4gb
+    entrypoint: [python3, /app/server.py]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./:/app:ro
+      - ${HF_CACHE:-../../.model-cache/huggingface}:/hf
+      - ../../.model-cache/compile:/root/.cache
+    environment:
+      CLEF_REPO: simonlehmann/clef-NVFP4
+      CLEF_REVISION: 817ac58ad358f42489980ead62f8bf7cafc628c2
+      CLEF_MAX_LENGTH: "4096"
+      HF_HUB_OFFLINE: "1"
+      VLLM_NO_USAGE_STATS: "1"
+    restart: "no"

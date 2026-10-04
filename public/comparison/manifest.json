@@ -1,0 +1,15 @@
+{
+  "course_version": 3,
+  "prompt_version": 5,
+  "seed": 17,
+  "speed_m_s": 6,
+  "mode": "camera",
+  "trials_per_model": 1,
+  "execution": "separate warmed trials; synchronized trajectory replay",
+  "runs_sha256": "db44456ce8f1dc6f37704ee80a5ef292f86c9e18ba64a729d8c14bbef4fe63c6",
+  "models": [
+    "Qwen3-VL-30B-A3B-Instruct-FP8",
+    "gpt-4.1-mini-2025-04-14",
+    "simonlehmann/clef-NVFP4"
+  ]
+}

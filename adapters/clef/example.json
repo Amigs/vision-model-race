@@ -1,0 +1,1 @@
+{"model":"clef","state":"A robot can choose LEFT or RIGHT.","questions":{"action":{"type":"choice","instructions":"Choose LEFT.","criteria":{"LEFT":"Left","RIGHT":"Right"}}}}

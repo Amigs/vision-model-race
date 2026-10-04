@@ -1,0 +1,24 @@
+{
+  "name": "vision-model-race",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:public": "node scripts/check-public.mjs",
+    "start:env": "node --env-file-if-exists=.env server.mjs"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "description": "Reproducible 3D lane-control experiments with vision and decision models.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

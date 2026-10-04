@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><title>Qwen · GPT · CLEF — Vídeo comparativo</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/build/three.module.js",
+        "three/addons/": "/vendor/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: #071417;
+      color: #d9e8e3;
+      margin: 0;
+      font: 14px system-ui;
+    }
+    header {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      padding: 18px 28px;
+    }
+    button,
+    a {
+      color: #14271e;
+      background: #b3f17d;
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 6px;
+      text-decoration: none;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.4;
+    }
+    #preview {
+      display: block;
+      width: min(100%, 1600px);
+      margin: auto;
+      aspect-ratio: 16/9;
+    }
+    #state {
+      color: #97aca4;
+    }
+  </style>
+  <header>
+    <strong>Qwen · GPT · CLEF</strong
+    ><button id="preview-button">Reproducir comparación</button
+    ><button id="render-button">Exportar vídeo 4K</button
+    ><span id="state">Cargando carreras…</span
+    ><a id="download" hidden>Descargar MP4</a>
+  </header>
+  <canvas id="preview" width="3840" height="2160"></canvas>
+  <script type="module" src="/compare.mjs"></script>
+</html>

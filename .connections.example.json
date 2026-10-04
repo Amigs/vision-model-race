@@ -1,0 +1,14 @@
+{
+  "qwenUrl": "http://127.0.0.1:8000/v1",
+  "qwenModel": "your-served-model-name",
+  "qwenLabel": "Qwen vision model",
+  "qwenKey": "",
+  "clefUrl": "http://127.0.0.1:8080",
+  "openaiModel": "gpt-4.1-mini-2025-04-14",
+  "openaiKey": "",
+  "jevModel": "jev-1.13.0",
+  "jevKey": "",
+  "llmUrl": "",
+  "llmModel": "",
+  "llmKey": ""
+}
